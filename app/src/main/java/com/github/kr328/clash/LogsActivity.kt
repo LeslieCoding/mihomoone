@@ -1,7 +1,5 @@
 package com.github.kr328.clash
 
-import com.github.kr328.clash.common.util.intent
-import com.github.kr328.clash.common.util.setFileName
 import com.github.kr328.clash.design.LogsDesign
 import com.github.kr328.clash.design.model.LogFile
 import com.github.kr328.clash.util.logsDir
@@ -33,10 +31,6 @@ class LogsActivity : BaseActivity<LogsDesign>() {
                 }
                 design.requests.onReceive {
                     when (it) {
-                        LogsDesign.Request.StartLogcat -> {
-                            startActivity(LogcatActivity::class.intent)
-                            finish()
-                        }
                         LogsDesign.Request.DeleteAll -> {
                             if (design.requestDeleteAll()) {
                                 withContext(Dispatchers.IO) {
@@ -45,9 +39,6 @@ class LogsActivity : BaseActivity<LogsDesign>() {
 
                                 events.trySend(Event.ActivityStart)
                             }
-                        }
-                        is LogsDesign.Request.OpenFile -> {
-                            startActivity(LogcatActivity::class.intent.setFileName(it.file.fileName))
                         }
                     }
                 }

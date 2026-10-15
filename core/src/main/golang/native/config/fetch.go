@@ -38,17 +38,75 @@ type fetchHeader struct {
 	ProfileUpdateInterval string
 }
 
-func openUrl(ctx context.Context, url string) (io.ReadCloser, fetchHeader, error) {
-	response, err := clashHttp.HttpRequest(ctx, url, http.MethodGet, http.Header{"User-Agent": {"ClashMetaForAndroid/" + app.VersionName()}}, nil)
+var bootstrapProxies = []string{
+	"http://127.0.0.1:7890",   // local core mixed port (when the core is running)
+	"http://192.168.5.6:7897", // LAN bootstrap proxy (PC portproxy)
+}
 
+func headerOf(h interface{ Get(string) string }) fetchHeader {
+	return fetchHeader{
+		SubscriptionUserInfo:  h.Get("subscription-userinfo"),
+		ProfileUpdateInterval: h.Get("profile-update-interval"),
+	}
+}
+
+func openUrlDirect(ctx context.Context, url string, header http.Header) (io.ReadCloser, fetchHeader, error) {
+	response, err := clashHttp.HttpRequest(ctx, url, http.MethodGet, header, nil)
 	if err != nil {
 		return nil, fetchHeader{}, err
 	}
 
-	return response.Body, fetchHeader{
-		SubscriptionUserInfo:  response.Header.Get("subscription-userinfo"),
-		ProfileUpdateInterval: response.Header.Get("profile-update-interval"),
-	}, nil
+	return response.Body, headerOf(response.Header), nil
+}
+
+func openUrlViaProxy(ctx context.Context, url string, header http.Header, proxy string) (io.ReadCloser, fetchHeader, error) {
+	proxyUrl, err := U.Parse(proxy)
+	if err != nil {
+		return nil, fetchHeader{}, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fetchHeader{}, err
+	}
+	for k, v := range header {
+		for _, s := range v {
+			req.Header.Add(k, s)
+		}
+	}
+
+	transport := &http.Transport{
+		Proxy:               http.ProxyURL(proxyUrl),
+		DisableKeepAlives:   true,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	client := &http.Client{Transport: transport, Timeout: 30 * time.Second}
+
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, fetchHeader{}, err
+	}
+
+	return response.Body, headerOf(response.Header), nil
+}
+
+func openUrl(ctx context.Context, url string) (io.ReadCloser, fetchHeader, error) {
+	header := http.Header{"User-Agent": {"ClashMetaForAndroid/" + app.VersionName()}}
+
+	reader, fh, err := openUrlDirect(ctx, url, header)
+
+	// The subscription host may be unreachable on a direct connection (e.g.
+	// blocked by the firewall). Fall back to known bootstrap proxies.
+	if err != nil {
+		for _, proxy := range bootstrapProxies {
+			if reader, fh, err = openUrlViaProxy(ctx, url, header, proxy); err == nil {
+				break
+			}
+		}
+	}
+
+	return reader, fh, err
 }
 
 func openContent(url string) (io.ReadCloser, error) {

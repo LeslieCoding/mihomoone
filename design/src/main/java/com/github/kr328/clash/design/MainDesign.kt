@@ -18,10 +18,8 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         ToggleStatus,
         OpenProxy,
         OpenProfiles,
-        OpenProviders,
         OpenLogs,
         OpenSettings,
-        OpenHelp,
         OpenAbout,
     }
 
@@ -57,12 +55,6 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
                 TunnelState.Mode.Rule -> context.getString(R.string.rule_mode)
                 else -> context.getString(R.string.rule_mode)
             }
-        }
-    }
-
-    suspend fun setHasProviders(has: Boolean) {
-        withContext(Dispatchers.Main) {
-            binding.hasProviders = has
         }
     }
 

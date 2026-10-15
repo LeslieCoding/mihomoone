@@ -3,9 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
-        android:name="android.software.leanback"
-        android:required="false" />
-    <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
@@ -27,7 +24,6 @@
     <application
         android:name=".MainApplication"
         android:allowBackup="true"
-        android:banner="@mipmap/ic_banner"
         android:fullBackupContent="@xml/full_backup_content"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/application_name"
@@ -55,9 +51,6 @@
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
-            </intent-filter>
         </activity>
         <activity-alias
             android:name=".MainActivityAlias"
@@ -66,7 +59,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>
@@ -133,20 +125,10 @@
             android:exported="false"
             android:label="@string/proxy" />
         <activity
-            android:name=".ProvidersActivity"
-            android:configChanges="uiMode"
-            android:exported="false"
-            android:label="@string/providers" />
-        <activity
             android:name=".LogsActivity"
             android:configChanges="uiMode"
             android:exported="false"
             android:label="@string/logs" />
-        <activity
-            android:name=".LogcatActivity"
-            android:configChanges="uiMode"
-            android:exported="false"
-            android:label="@string/logcat" />
         <activity
             android:name=".SettingsActivity"
             android:configChanges="uiMode"
@@ -172,40 +154,6 @@
             android:configChanges="uiMode"
             android:exported="false"
             android:label="@string/meta_features" />
-        <activity
-            android:name=".AccessControlActivity"
-            android:configChanges="uiMode"
-            android:exported="false"
-            android:label="@string/access_control_packages" />
-        <activity
-            android:name=".HelpActivity"
-            android:configChanges="uiMode"
-            android:exported="false"
-            android:label="@string/help" />
-        <activity
-            android:name=".FilesActivity"
-            android:configChanges="uiMode"
-            android:exported="false"
-            android:label="@string/files" />
-
-        <service
-            android:name=".LogcatService"
-            android:exported="false"
-            android:label="@string/clash_logcat"
-            android:foregroundServiceType="specialUse">
-            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-            android:value="explanation_for_special_use"/>
-        </service>
-        <service
-            android:name=".TileService"
-            android:exported="true"
-            android:icon="@drawable/ic_logo_service"
-            android:label="@string/launch_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-        </service>
 
         <receiver
             android:name=".RestartReceiver"
@@ -214,15 +162,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".DialerReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.SECRET_CODE" />
-                <!-- 252746382 is the name of Clash Meta in T9 -->
-                <data android:scheme="android_secret_code" android:host="252746382" />
             </intent-filter>
         </receiver>
     </application>

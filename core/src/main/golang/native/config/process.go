@@ -25,6 +25,7 @@ var processors = []processor{
 	patchTun,
 	patchListeners,
 	patchProviders,
+	patchProxyOneAutoSelect, // after patchProviders, before validConfig
 	validConfig,
 }
 
@@ -118,6 +119,72 @@ func patchProviders(cfg *config.RawConfig, profileDir string) error {
 		}
 		provider["path"] = profileDir + "/providers/" + path
 	})
+
+	return nil
+}
+
+var proxyOneRegionPattern = regexp2.MustCompile(`(?i)(新加坡|日本|🇸🇬|🇯🇵|SG|JP)`, 0)
+
+// Only use Singapore/Japan nodes: collect them into a url-test group named
+// "ProxyOne" and put that group first in every select group, so the kernel
+// always lands on the fastest SG/JP node (StoreSelected is disabled, the
+// first entry is the effective default on every load).
+func patchProxyOneAutoSelect(cfg *config.RawConfig, _ string) error {
+	var regionProxies []any
+	for _, p := range cfg.Proxy {
+		name, _ := p["name"].(string)
+		if name == "" {
+			continue
+		}
+		if matched, _ := proxyOneRegionPattern.MatchString(name); matched {
+			regionProxies = append(regionProxies, name)
+		}
+	}
+
+	if len(regionProxies) == 0 {
+		return nil
+	}
+
+	autoGroup := map[string]any{
+		"name":      "ProxyOne",
+		"type":      "url-test",
+		"proxies":   regionProxies,
+		"url":       "http://www.gstatic.com/generate_204",
+		"interval":  300,
+		"tolerance": 100,
+	}
+
+	hasAutoGroup := false
+	for _, g := range cfg.ProxyGroup {
+		name, _ := g["name"].(string)
+		if name == "ProxyOne" {
+			hasAutoGroup = true
+			break
+		}
+	}
+	if !hasAutoGroup {
+		cfg.ProxyGroup = append([]map[string]any{autoGroup}, cfg.ProxyGroup...)
+	}
+
+	for _, g := range cfg.ProxyGroup {
+		groupType, _ := g["type"].(string)
+		name, _ := g["name"].(string)
+		if groupType != "select" || name == "ProxyOne" {
+			continue
+		}
+
+		proxies, _ := g["proxies"].([]any)
+		contains := false
+		for _, p := range proxies {
+			if s, _ := p.(string); s == "ProxyOne" {
+				contains = true
+				break
+			}
+		}
+		if !contains {
+			g["proxies"] = append([]any{"ProxyOne"}, proxies...)
+		}
+	}
 
 	return nil
 }

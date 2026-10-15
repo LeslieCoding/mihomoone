@@ -1,7 +1,5 @@
 package com.github.kr328.clash
 
-import com.github.kr328.clash.common.util.intent
-import com.github.kr328.clash.common.util.setUUID
 import com.github.kr328.clash.common.util.uuid
 import com.github.kr328.clash.design.PropertiesDesign
 import com.github.kr328.clash.design.ui.ToastDuration
@@ -57,9 +55,6 @@ class PropertiesActivity : BaseActivity<PropertiesDesign>() {
                 }
                 design.requests.onReceive {
                     when (it) {
-                        PropertiesDesign.Request.BrowseFiles -> {
-                            startActivity(FilesActivity::class.intent.setUUID(uuid))
-                        }
                         PropertiesDesign.Request.Commit -> {
                             design.verifyAndCommit()
                         }

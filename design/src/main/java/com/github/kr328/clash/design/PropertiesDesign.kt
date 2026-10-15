@@ -20,7 +20,6 @@ import kotlin.coroutines.resume
 class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(context) {
     sealed class Request {
         object Commit : Request()
-        object BrowseFiles : Request()
     }
 
     private val binding = DesignPropertiesBinding
@@ -121,23 +120,6 @@ class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(cont
         }
     }
 
-    fun inputAgeSecretKey() {
-        launch {
-            val ageSecretKey = context.requestModelTextInput(
-                initial = profile.ageSecretKey ?: "",
-                title = context.getText(R.string.age_secret_key),
-                hint = context.getText(R.string.age_secret_key_hint),
-                error = context.getText(R.string.age_secret_key_error),
-                validator = ValidatorAgeSecretKey
-            )
-
-            val newKey = ageSecretKey.ifBlank { null }
-            if (newKey != profile.ageSecretKey) {
-                profile = profile.copy(ageSecretKey = newKey)
-            }
-        }
-    }
-
     fun inputInterval() {
         launch {
             var minutes = TimeUnit.MILLISECONDS.toMinutes(profile.interval)
@@ -160,10 +142,6 @@ class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(cont
 
     fun requestCommit() {
         requests.trySend(Request.Commit)
-    }
-
-    fun requestBrowseFiles() {
-        requests.trySend(Request.BrowseFiles)
     }
 
     private fun ModelProgressBarConfigure.applyFrom(status: FetchStatus) {

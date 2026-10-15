@@ -48,6 +48,8 @@ class ProfileReceiver : BroadcastReceiver() {
         private val lock = Mutex()
         private var initialized: Boolean = false
 
+        private val RETRY_INTERVAL = TimeUnit.MINUTES.toMillis(15)
+
         suspend fun rescheduleAll(context: Context) = lock.withLock {
             if (initialized)
                 return
@@ -97,7 +99,20 @@ class ProfileReceiver : BroadcastReceiver() {
             val interval = (imported.interval - (current - last)).coerceAtLeast(0)
 
             context.getSystemService<AlarmManager>()
-                ?.set(AlarmManager.RTC, current + interval, intent)
+                ?.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, current + interval, intent)
+        }
+
+        fun scheduleRetry(context: Context, imported: Imported) {
+            val intent = pendingIntentOf(context, imported)
+
+            context.getSystemService<AlarmManager>()?.cancel(intent)
+
+            context.getSystemService<AlarmManager>()
+                ?.setAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis() + RETRY_INTERVAL,
+                    intent,
+                )
         }
 
         private suspend fun reset() = lock.withLock {

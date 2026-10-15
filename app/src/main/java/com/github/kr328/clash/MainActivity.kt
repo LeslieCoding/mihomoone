@@ -12,11 +12,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.lifecycle.lifecycleScope
 import com.github.kr328.clash.common.constants.Intents
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.common.util.ticker
 import com.github.kr328.clash.design.MainDesign
 import com.github.kr328.clash.design.ui.ToastDuration
+import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.util.startClashService
 import com.github.kr328.clash.util.stopClashService
 import com.github.kr328.clash.util.withClash
@@ -24,6 +27,7 @@ import com.github.kr328.clash.util.withProfile
 import com.github.kr328.clash.core.bridge.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
@@ -34,6 +38,10 @@ class MainActivity : BaseActivity<MainDesign>() {
         val design = MainDesign(this)
 
         setContentDesign(design)
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            ensureDefaultProfile()
+        }
 
         design.fetch()
 
@@ -62,19 +70,10 @@ class MainActivity : BaseActivity<MainDesign>() {
                             startActivity(ProxyActivity::class.intent)
                         MainDesign.Request.OpenProfiles ->
                             startActivity(ProfilesActivity::class.intent)
-                        MainDesign.Request.OpenProviders ->
-                            startActivity(ProvidersActivity::class.intent)
-                        MainDesign.Request.OpenLogs -> {
-                            if (LogcatService.running) {
-                                startActivity(LogcatActivity::class.intent)
-                            } else {
-                                startActivity(LogsActivity::class.intent)
-                            }
-                        }
+                        MainDesign.Request.OpenLogs ->
+                            startActivity(LogsActivity::class.intent)
                         MainDesign.Request.OpenSettings ->
                             startActivity(SettingsActivity::class.intent)
-                        MainDesign.Request.OpenHelp ->
-                            startActivity(HelpActivity::class.intent)
                         MainDesign.Request.OpenAbout ->
                             design.showAbout(queryAppVersionName())
                     }
@@ -88,18 +87,42 @@ class MainActivity : BaseActivity<MainDesign>() {
         }
     }
 
+    private suspend fun ensureDefaultProfile() {
+        try {
+            withProfile {
+                if (queryAll().isEmpty()) {
+                    val uuid = create(
+                        Profile.Type.Url,
+                        DEFAULT_PROFILE_NAME,
+                        DEFAULT_SUBSCRIPTION_URL,
+                    )
+
+                    patch(
+                        uuid,
+                        DEFAULT_PROFILE_NAME,
+                        DEFAULT_SUBSCRIPTION_URL,
+                        DEFAULT_UPDATE_INTERVAL,
+                        null,
+                    )
+
+                    commit(uuid, null)
+
+                    queryByUUID(uuid)?.also { setActive(it) }
+                }
+            }
+        } catch (e: Exception) {
+            Log.w("Import default subscription: $e", e)
+        }
+    }
+
     private suspend fun MainDesign.fetch() {
         setClashRunning(clashRunning)
 
         val state = withClash {
             queryTunnelState()
         }
-        val providers = withClash {
-            queryProviders()
-        }
 
         setMode(state.mode)
-        setHasProviders(providers.isNotEmpty())
 
         withProfile {
             setProfileName(queryActive()?.name)
@@ -210,5 +233,12 @@ class MainActivity : BaseActivity<MainDesign>() {
             .build()
 
         ShortcutManagerCompat.setDynamicShortcuts(this, listOf(toggle, start, stop))
+    }
+
+    companion object {
+        private const val DEFAULT_PROFILE_NAME = "ProxyOne"
+        private const val DEFAULT_SUBSCRIPTION_URL =
+            "https://url.ktm001.vip/api/v1/client/subscribe?token=b62ccc25345017b6a00a565223821f2f&flag=meta"
+        private val DEFAULT_UPDATE_INTERVAL = TimeUnit.HOURS.toMillis(6)
     }
 }

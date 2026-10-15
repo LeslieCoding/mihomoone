@@ -92,6 +92,8 @@ class ProfileWorker : BaseService() {
             ProfileReceiver.scheduleNext(this, imported)
         } catch (e: Exception) {
             failed(imported.uuid, imported.name, e.message ?: "Unknown")
+
+            ProfileReceiver.scheduleRetry(this, imported)
         }
     }
 

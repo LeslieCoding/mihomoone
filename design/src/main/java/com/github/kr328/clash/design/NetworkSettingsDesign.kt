@@ -20,11 +20,7 @@ class NetworkSettingsDesign(
     uiStore: UiStore,
     srvStore: ServiceStore,
     running: Boolean,
-) : Design<NetworkSettingsDesign.Request>(context) {
-    enum class Request {
-        StartAccessControlList
-    }
-
+) : Design<Unit>(context) {
     private val binding = DesignSettingsCommonBinding
         .inflate(context.layoutInflater, context.root, false)
 
@@ -122,15 +118,6 @@ class NetworkSettingsDesign(
                 title = R.string.access_control_mode,
                 configure = vpnDependencies::add,
             )
-
-            clickable(
-                title = R.string.access_control_packages,
-                summary = R.string.access_control_packages_summary,
-            ) {
-                clicked {
-                    requests.trySend(Request.StartAccessControlList)
-                }
-            }
 
             if (running) {
                 vpn.enabled = false

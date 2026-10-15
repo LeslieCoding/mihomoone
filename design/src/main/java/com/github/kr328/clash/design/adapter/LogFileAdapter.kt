@@ -10,7 +10,6 @@ import com.github.kr328.clash.design.view.ActionLabel
 
 class LogFileAdapter(
     private val context: Context,
-    private val open: (LogFile) -> Unit,
 ) : RecyclerView.Adapter<LogFileAdapter.Holder>() {
     class Holder(val label: ActionLabel) : RecyclerView.ViewHolder(label)
 
@@ -27,9 +26,6 @@ class LogFileAdapter(
 
         holder.label.text = current.fileName
         holder.label.subtext = current.date.format(context)
-        holder.label.setOnClickListener {
-            open(current)
-        }
     }
 
     override fun getItemCount(): Int {

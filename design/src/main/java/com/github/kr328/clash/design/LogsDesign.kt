@@ -14,17 +14,12 @@ import kotlin.coroutines.resume
 
 class LogsDesign(context: Context) : Design<LogsDesign.Request>(context) {
     sealed class Request {
-        object StartLogcat : Request()
         object DeleteAll : Request()
-
-        data class OpenFile(val file: LogFile) : Request()
     }
 
     private val binding = DesignLogsBinding
         .inflate(context.layoutInflater, context.root, false)
-    private val adapter = LogFileAdapter(context) {
-        requests.trySend(Request.OpenFile(it))
-    }
+    private val adapter = LogFileAdapter(context)
 
     override val root: View
         get() = binding.root
