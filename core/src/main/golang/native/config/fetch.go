@@ -56,6 +56,12 @@ func openUrlDirect(ctx context.Context, url string, header http.Header) (io.Read
 		return nil, fetchHeader{}, err
 	}
 
+	if response.StatusCode >= 400 {
+		_ = response.Body.Close()
+
+		return nil, fetchHeader{}, fmt.Errorf("http status %d", response.StatusCode)
+	}
+
 	return response.Body, headerOf(response.Header), nil
 }
 
@@ -86,6 +92,12 @@ func openUrlViaProxy(ctx context.Context, url string, header http.Header, proxy 
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, fetchHeader{}, err
+	}
+
+	if response.StatusCode >= 400 {
+		_ = response.Body.Close()
+
+		return nil, fetchHeader{}, fmt.Errorf("http status %d via %s", response.StatusCode, proxy)
 	}
 
 	return response.Body, headerOf(response.Header), nil

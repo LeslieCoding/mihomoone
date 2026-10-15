@@ -141,17 +141,31 @@ func patchProxyOneAutoSelect(cfg *config.RawConfig, _ string) error {
 		}
 	}
 
-	if len(regionProxies) == 0 {
-		return nil
-	}
-
 	autoGroup := map[string]any{
 		"name":      "ProxyOne",
 		"type":      "url-test",
-		"proxies":   regionProxies,
 		"url":       "http://www.gstatic.com/generate_204",
 		"interval":  300,
 		"tolerance": 100,
+	}
+
+	if len(regionProxies) > 0 {
+		autoGroup["proxies"] = regionProxies
+	} else {
+		// No inline SG/JP proxies: nodes may live in proxy-providers,
+		// which resolve at runtime. Reference all providers and let the
+		// kernel filter their nodes by name.
+		var providerNames []any
+		for name := range cfg.ProxyProvider {
+			providerNames = append(providerNames, name)
+		}
+
+		if len(providerNames) == 0 {
+			return nil
+		}
+
+		autoGroup["use"] = providerNames
+		autoGroup["filter"] = `(?i)(新加坡|日本|🇸🇬|🇯🇵|SG|JP)`
 	}
 
 	hasAutoGroup := false
