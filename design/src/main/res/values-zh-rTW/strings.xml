@@ -177,8 +177,8 @@
     <string name="active_unsaved_tips">設定檔需要在啟用之前儲存</string>
     <string name="mode_switch_tips">僅在本次工作階段中有效</string>
     <string name="name_server_policy">Name Server 政策</string>
-    <string name="clash_meta_for_android">Clash Meta for Android</string>
-    <string name="meta_features">Meta Features</string>
+    <string name="clash_meta_for_android">ProxyOne</string>
+    <string name="meta_features">内核特性</string>
     <string name="unified_delay">Unified Delay</string>
     <string name="geodata_mode">Geodata Mode</string>
     <string name="tcp_concurrent">TCP Concurrent</string>
@@ -208,8 +208,8 @@
     <string name="toast_profile_updated_complete">Update profile %s completed</string>
     <string name="toast_profile_updated_failed">Update profile %1$s failed: %2$s</string>
     <string name="external_control_activity">External Control</string>
-    <string name="external_control_started">Clash.Meta service started</string>
-    <string name="external_control_stopped">Clash.Meta service stopped</string>
+    <string name="external_control_started">ProxyOne service started</string>
+    <string name="external_control_stopped">ProxyOne service stopped</string>
     <string name="force_dns_mapping">Force DNS Mapping</string>
     <string name="parse_pure_ip">Parse Pure IP</string>
     <string name="override_destination">Override Destination</string>

@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="PluralsCandidate">
-    <string name="launch_name_meta">Clash Meta</string>
+    <string name="launch_name_meta">ProxyOne</string>
     <string name="launch_name_alpha">ProxyOne</string>
-    <string name="application_name_meta">Clash Meta for Android</string>
+    <string name="application_name_meta">ProxyOne</string>
     <string name="application_name_alpha">ProxyOne</string>
 
     <string name="stopped">Stopped</string>
@@ -117,7 +117,7 @@
     <string name="override">Override</string>
 
     <string name="auto_restart">Auto Restart</string>
-    <string name="allow_clash_auto_restart">Allow clash auto restart</string>
+    <string name="allow_clash_auto_restart">Allow ProxyOne auto restart</string>
 
     <string name="route_system_traffic">Route System Traffic</string>
     <string name="routing_via_vpn_service">Auto routing all system traffic via VpnService</string>
@@ -135,7 +135,7 @@
     <string name="system_proxy_summary">Attach http proxy to VpnService</string>
     <string name="access_control_mode">Access Control Mode</string>
 
-    <string name="options_unavailable">Options Unavailable until Clash Stopped</string>
+    <string name="options_unavailable">Options Unavailable until ProxyOne Stopped</string>
 
     <string name="general">General</string>
     <string name="dns">DNS</string>
@@ -201,7 +201,7 @@
 
     <string name="filter">Filter</string>
 
-    <string name="clash_meta_for_android">Clash Meta for Android</string>
+    <string name="clash_meta_for_android">ProxyOne</string>
 
     <string name="meta_github_url" translatable="false">https://github.com/MetaCubeX/ClashMetaForAndroid</string>
 
@@ -264,7 +264,7 @@
     <string name="mode_switch_tips">Valid only for current session</string>
 
 
-    <string name="meta_features">Meta Features</string>
+    <string name="meta_features">Kernel Features</string>
     <string name="unified_delay">Unified Delay</string>
     <string name="geodata_mode">Geodata Mode</string>
     <string name="tcp_concurrent">TCP Concurrent</string>
@@ -305,8 +305,8 @@
     <string name="toast_profile_updated_complete">Update profile %s completed</string>
     <string name="toast_profile_updated_failed">Update profile %1$s failed: %2$s</string>
     <string name="external_control_activity">External Control</string>
-    <string name="external_control_started">Clash.Meta service started</string>
-    <string name="external_control_stopped">Clash.Meta service stopped</string>
+    <string name="external_control_started">ProxyOne service started</string>
+    <string name="external_control_stopped">ProxyOne service stopped</string>
 
     <string name="hide_app_icon_title">Hide App Icon</string>
     <string name="hide_app_icon_desc">You can dial *#*#252746382#*#* to open this App</string>
@@ -315,10 +315,10 @@
     <string name="import_from_qr_no_permission">Camera access is restricted. Please enable it in Settings.</string>
     <string name="import_from_qr_exception">An unhandled system exception occurred.</string>
 
-    <string name="shortcut_toggle_short">Toggle Clash</string>
-    <string name="shortcut_toggle_long">Toggle Clash service on/off</string>
-    <string name="shortcut_start_short">Start Clash</string>
-    <string name="shortcut_start_long">Start Clash service</string>
-    <string name="shortcut_stop_short">Stop Clash</string>
-    <string name="shortcut_stop_long">Stop Clash service</string>
+    <string name="shortcut_toggle_short">Toggle ProxyOne</string>
+    <string name="shortcut_toggle_long">Toggle ProxyOne service on/off</string>
+    <string name="shortcut_start_short">Start ProxyOne</string>
+    <string name="shortcut_start_long">Start ProxyOne service</string>
+    <string name="shortcut_stop_short">Stop ProxyOne</string>
+    <string name="shortcut_stop_long">Stop ProxyOne service</string>
 </resources>
