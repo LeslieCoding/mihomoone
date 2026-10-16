@@ -145,7 +145,7 @@ func patchProxyOneAutoSelect(cfg *config.RawConfig, _ string) error {
 		"name":      "ProxyOne",
 		"type":      "url-test",
 		"url":       "http://www.gstatic.com/generate_204",
-		"interval":  300,
+		"interval":  60,
 		"tolerance": 100,
 	}
 
