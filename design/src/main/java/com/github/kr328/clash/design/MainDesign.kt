@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
     enum class Request {
         ToggleStatus,
+        RefreshProfile,
         OpenProxy,
         OpenProfiles,
         OpenLogs,
@@ -32,6 +33,12 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
     suspend fun setProfileName(name: String?) {
         withContext(Dispatchers.Main) {
             binding.profileName = name
+        }
+    }
+
+    suspend fun setNodeName(name: String?) {
+        withContext(Dispatchers.Main) {
+            binding.nodeName = name
         }
     }
 

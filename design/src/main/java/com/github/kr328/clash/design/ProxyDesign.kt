@@ -139,7 +139,7 @@ class ProxyDesign(
             }
 
             TabLayoutMediator(binding.tabLayoutView, binding.pagesView) { tab, index ->
-                tab.text = groupNames[index]
+                tab.text = displayNameOf(groupNames[index])
             }.attach()
 
             val initialPosition = groupNames.indexOf(uiStore.proxyLastGroup)
@@ -149,6 +149,11 @@ class ProxyDesign(
                     binding.pagesView.setCurrentItem(initialPosition, false)
             }
         }
+    }
+
+    private fun displayNameOf(name: String): String = when (name) {
+        "MihomoOne" -> context.getString(R.string.proxy_tab_auto_select)
+        else -> name
     }
 
     fun requestUrlTesting() {

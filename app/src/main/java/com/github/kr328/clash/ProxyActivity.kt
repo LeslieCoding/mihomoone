@@ -15,7 +15,9 @@ import kotlinx.coroutines.sync.withPermit
 class ProxyActivity : BaseActivity<ProxyDesign>() {
     override suspend fun main() {
         val mode = withClash { queryOverride(Clash.OverrideSlot.Session).mode }
-        val names = withClash { queryProxyGroupNames(uiStore.proxyExcludeNotSelectable) }
+        val names = filterVisibleGroups(
+            withClash { queryProxyGroupNames(uiStore.proxyExcludeNotSelectable) }
+        )
         val states = List(names.size) { ProxyState("?") }
         val unorderedStates = names.indices.map { names[it] to states[it] }.toMap()
         val reloadLock = Semaphore(10)
@@ -36,9 +38,11 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                 events.onReceive {
                     when (it) {
                         Event.ProfileLoaded -> {
-                            val newNames = withClash {
-                                queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
-                            }
+                            val newNames = filterVisibleGroups(
+                                withClash {
+                                    queryProxyGroupNames(uiStore.proxyExcludeNotSelectable)
+                                }
+                            )
 
                             if (newNames != names) {
                                 startActivity(ProxyActivity::class.intent)
@@ -113,6 +117,19 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                     }
                 }
             }
+        }
+    }
+
+    companion object {
+        private const val AUTO_GROUP_NAME = "MihomoOne"
+        private const val MANUAL_GROUP_NAME = "节点选择"
+
+        // 内核里其它分组仍被数千条分流规则引用，不能删；这里只在界面上隐藏。
+        // 两个目标组都找不到时退回显示全部，保证换订阅后页面仍可用。
+        private fun filterVisibleGroups(names: List<String>): List<String> {
+            val preferred = listOf(AUTO_GROUP_NAME, MANUAL_GROUP_NAME).filter { it in names }
+
+            return preferred.ifEmpty { names }
         }
     }
 }

@@ -3,8 +3,38 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- White bolt/P mark centered on red background -->
+    <!-- Two routes merging into one exit, ending at the chosen node -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M58,26 L38,58 h12 L46,82 L72,46 h-14 L66,26 Z" />
+        android:pathData="M30,42 C42,42 47,50 54,52.5"
+        android:strokeColor="#F0FDFA"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M30,66 C42,66 47,58 54,55.5"
+        android:strokeColor="#F0FDFA"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M52,54 L68,54"
+        android:strokeColor="#F0FDFA"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M68,54 L60,47"
+        android:strokeColor="#F0FDFA"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M68,54 L60,61"
+        android:strokeColor="#F0FDFA"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M76,54 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0"
+        android:fillColor="#F0FDFA" />
 </vector>

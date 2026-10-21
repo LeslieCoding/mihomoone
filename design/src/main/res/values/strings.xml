@@ -14,6 +14,18 @@
     <string name="rule_mode">Rule Mode</string>
     <string name="global_mode">Global Mode</string>
     <string name="proxy_empty_tips">No groups can be displayed</string>
+    <string name="proxy_tab_auto_select">Auto Select</string>
+    <string name="main_current_node">Current Exit</string>
+    <string name="main_subscription">Subscription</string>
+    <string name="main_refresh">Refresh</string>
+    <string name="main_refresh_summary">Update subscription and re-test all nodes</string>
+    <string name="main_refresh_started">Subscription update started</string>
+    <string name="update_found_title">Update Available</string>
+    <string name="update_found_message">Version %s is downloaded and verified. Update now?</string>
+    <string name="update_now">Update Now</string>
+    <string name="update_later">Later</string>
+    <string name="update_downloading">Downloading update %s…</string>
+    <string name="update_failed">Update download failed</string>
 
     <string name="profiles">Profiles</string>
     <string name="not_selected">Not selected</string>

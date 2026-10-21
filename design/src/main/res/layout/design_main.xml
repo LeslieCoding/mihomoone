@@ -18,6 +18,9 @@
             name="profileName"
             type="String" />
         <variable
+            name="nodeName"
+            type="String" />
+        <variable
             name="colorClashStarted"
             type="int" />
         <variable
@@ -64,14 +67,21 @@
                             android:layout_width="@dimen/main_logo_size"
                             android:layout_height="@dimen/main_logo_size"
                             android:layout_gravity="center"
-                            android:background="@drawable/ic_clash" />
+                            android:background="@drawable/ic_mihomoone" />
                     </FrameLayout>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/application_name"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/application_name"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+                        android:text="@{mode}"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
                 </LinearLayout>
 
                 <com.github.kr328.clash.design.view.LargeActionCard
@@ -93,9 +103,18 @@
                     android:layout_marginVertical="@dimen/main_card_margin_vertical"
                     android:onClick="@{() -> self.request(Request.OpenProxy)}"
                     android:visibility="@{clashRunning ? View.VISIBLE : View.GONE}"
-                    app:icon="@drawable/ic_baseline_apps"
-                    app:subtext="@{mode}"
-                    app:text="@string/proxy" />
+                    app:icon="@drawable/ic_baseline_vpn_lock"
+                    app:subtext="@{nodeName != null ? nodeName : @string/not_selected}"
+                    app:text="@string/main_current_node" />
+
+                <com.github.kr328.clash.design.view.LargeActionCard
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="@dimen/main_card_margin_vertical"
+                    android:onClick="@{() -> self.request(Request.RefreshProfile)}"
+                    app:icon="@drawable/ic_baseline_sync"
+                    app:subtext="@string/main_refresh_summary"
+                    app:text="@string/main_refresh" />
 
                 <com.github.kr328.clash.design.view.LargeActionCard
                     android:layout_width="match_parent"
@@ -104,7 +123,7 @@
                     android:onClick="@{() -> self.request(Request.OpenProfiles)}"
                     app:icon="@drawable/ic_baseline_view_list"
                     app:subtext="@{profileName != null ? @string/format_profile_activated(profileName) : @string/not_selected}"
-                    app:text="@string/profile" />
+                    app:text="@string/main_subscription" />
 
                 <com.github.kr328.clash.design.view.LargeActionLabel
                     android:layout_width="match_parent"

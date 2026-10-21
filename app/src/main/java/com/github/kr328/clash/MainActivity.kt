@@ -43,6 +43,14 @@ class MainActivity : BaseActivity<MainDesign>() {
             ensureDefaultProfile()
         }
 
+        lifecycleScope.launch {
+            try {
+                AppUpdater.checkAndUpdate(this@MainActivity)
+            } catch (e: Exception) {
+                Log.w("App update check: $e", e)
+            }
+        }
+
         design.fetch()
 
         val ticker = ticker(TimeUnit.SECONDS.toMillis(1))
@@ -65,6 +73,17 @@ class MainActivity : BaseActivity<MainDesign>() {
                                 stopClashService()
                             else
                                 design.startClash()
+                        }
+                        MainDesign.Request.RefreshProfile -> {
+                            val active = withProfile { queryActive() }
+
+                            if (active == null) {
+                                design.showToast(DesignR.string.no_profile_selected, ToastDuration.Long)
+                            } else {
+                                design.showToast(DesignR.string.main_refresh_started, ToastDuration.Short)
+
+                                withProfile { update(active.uuid) }
+                            }
                         }
                         MainDesign.Request.OpenProxy ->
                             startActivity(ProxyActivity::class.intent)
@@ -124,15 +143,27 @@ class MainActivity : BaseActivity<MainDesign>() {
 
         setMode(state.mode)
 
+        setNodeName(queryCurrentNode())
+
         withProfile {
             setProfileName(queryActive()?.name)
         }
+    }
+
+    private suspend fun queryCurrentNode(): String? {
+        if (!clashRunning) return null
+
+        return runCatching {
+            withClash { queryProxyGroup(AUTO_GROUP_NAME, uiStore.proxySort).now }
+        }.getOrNull()
     }
 
     private suspend fun MainDesign.fetchTraffic() {
         withClash {
             setForwarded(queryTrafficTotal())
         }
+
+        setNodeName(queryCurrentNode())
     }
 
     private suspend fun MainDesign.startClash() {
@@ -236,6 +267,7 @@ class MainActivity : BaseActivity<MainDesign>() {
     }
 
     companion object {
+        private const val AUTO_GROUP_NAME = "MihomoOne"
         private const val DEFAULT_PROFILE_NAME = "MihomoOne"
         private const val DEFAULT_SUBSCRIPTION_URL =
             "https://url.ktm001.vip/api/v1/client/subscribe?token=b62ccc25345017b6a00a565223821f2f&flag=meta"
