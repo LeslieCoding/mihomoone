@@ -57,6 +57,8 @@
     <string name="properties">参数</string>
     <string name="proxy">代理</string>
     <string name="proxy_tab_auto_select">自动选择</string>
+    <string name="proxy_auto_select_locked">自动选择开启中，关闭后才能手动选节点</string>
+    <string name="proxy_node_list">节点列表</string>
     <string name="main_current_node">当前出口</string>
     <string name="main_subscription">订阅</string>
     <string name="main_refresh">一键刷新</string>

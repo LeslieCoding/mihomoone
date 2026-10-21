@@ -18,7 +18,6 @@ import com.github.kr328.clash.design.util.applyFrom
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.resolveThemedColor
 import com.github.kr328.clash.design.util.root
-import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -36,6 +35,7 @@ class ProxyDesign(
         data class Reload(val index: Int) : Request()
         data class Select(val index: Int, val name: String) : Request()
         data class UrlTest(val index: Int) : Request()
+        data class ToggleAuto(val enabled: Boolean) : Request()
     }
 
     private val binding = DesignProxyBinding
@@ -62,6 +62,22 @@ class ProxyDesign(
         }
 
     override val root: View = binding.root
+
+    // When auto-select is on, the kernel's url-test group owns the exit node;
+    // tapping list entries is blocked with a hint instead of patching selector.
+    private var selectionLocked = true
+
+    suspend fun setAutoSelect(auto: Boolean) {
+        withContext(Dispatchers.Main) {
+            selectionLocked = auto
+
+            binding.autoSelectSwitch.setOnCheckedChangeListener(null)
+            binding.autoSelectSwitch.isChecked = auto
+            binding.autoSelectSwitch.setOnCheckedChangeListener { _, checked ->
+                requests.trySend(Request.ToggleAuto(checked))
+            }
+        }
+    }
 
     suspend fun updateGroup(
         position: Int,
@@ -102,7 +118,7 @@ class ProxyDesign(
             binding.emptyView.visibility = View.VISIBLE
 
             binding.urlTestView.visibility = View.GONE
-            binding.tabLayoutView.visibility = View.GONE
+            binding.autoSelectLayout.visibility = View.GONE
             binding.elevationView.visibility = View.GONE
             binding.pagesView.visibility = View.GONE
             binding.urlTestFloatView.visibility = View.GONE
@@ -111,13 +127,25 @@ class ProxyDesign(
                 context.resolveThemedColor(com.google.android.material.R.attr.colorOnPrimary)
             )
 
+            binding.autoSelectSwitch.setOnCheckedChangeListener { _, checked ->
+                requests.trySend(Request.ToggleAuto(checked))
+            }
+
             binding.pagesView.apply {
                 adapter = ProxyPageAdapter(
                     surface,
                     config,
                     List(groupNames.size) { index ->
                         ProxyAdapter(config) { name ->
-                            requests.trySend(Request.Select(index, name))
+                            if (selectionLocked) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.proxy_auto_select_locked,
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            } else {
+                                requests.trySend(Request.Select(index, name))
+                            }
                         }
                     }
                 ) {
@@ -131,29 +159,9 @@ class ProxyDesign(
 
                         updateUrlTestButtonStatus()
                     }
-
-                    override fun onPageSelected(position: Int) {
-                        uiStore.proxyLastGroup = groupNames[position]
-                    }
                 })
             }
-
-            TabLayoutMediator(binding.tabLayoutView, binding.pagesView) { tab, index ->
-                tab.text = displayNameOf(groupNames[index])
-            }.attach()
-
-            val initialPosition = groupNames.indexOf(uiStore.proxyLastGroup)
-
-            binding.pagesView.post {
-                if (initialPosition > 0)
-                    binding.pagesView.setCurrentItem(initialPosition, false)
-            }
         }
-    }
-
-    private fun displayNameOf(name: String): String = when (name) {
-        "MihomoOne" -> context.getString(R.string.proxy_tab_auto_select)
-        else -> name
     }
 
     fun requestUrlTesting() {

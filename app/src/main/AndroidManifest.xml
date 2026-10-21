@@ -124,7 +124,7 @@
             android:name=".ProxyActivity"
             android:configChanges="uiMode"
             android:exported="false"
-            android:label="@string/proxy" />
+            android:label="@string/proxy_node_list" />
         <activity
             android:name=".LogsActivity"
             android:configChanges="uiMode"

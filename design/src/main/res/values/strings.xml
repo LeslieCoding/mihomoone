@@ -15,6 +15,8 @@
     <string name="global_mode">Global Mode</string>
     <string name="proxy_empty_tips">No groups can be displayed</string>
     <string name="proxy_tab_auto_select">Auto Select</string>
+    <string name="proxy_auto_select_locked">Disable auto select to pick a node manually</string>
+    <string name="proxy_node_list">Node List</string>
     <string name="main_current_node">Current Exit</string>
     <string name="main_subscription">Subscription</string>
     <string name="main_refresh">Refresh</string>
