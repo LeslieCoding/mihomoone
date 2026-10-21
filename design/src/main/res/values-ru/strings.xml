@@ -271,8 +271,8 @@
     <string name="toast_profile_updated_complete">Update profile %s completed</string>
     <string name="toast_profile_updated_failed">Update profile %1$s failed: %2$s</string>
     <string name="external_control_activity">External Control</string>
-    <string name="external_control_started">ProxyOne service started</string>
-    <string name="external_control_stopped">ProxyOne service stopped</string>
+    <string name="external_control_started">MihomoOne service started</string>
+    <string name="external_control_stopped">MihomoOne service stopped</string>
     <string name="force_dns_mapping">Force DNS Mapping</string>
     <string name="parse_pure_ip">Parse Pure IP</string>
     <string name="override_destination">Override Destination</string>

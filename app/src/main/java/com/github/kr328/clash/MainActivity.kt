@@ -236,7 +236,7 @@ class MainActivity : BaseActivity<MainDesign>() {
     }
 
     companion object {
-        private const val DEFAULT_PROFILE_NAME = "ProxyOne"
+        private const val DEFAULT_PROFILE_NAME = "MihomoOne"
         private const val DEFAULT_SUBSCRIPTION_URL =
             "https://url.ktm001.vip/api/v1/client/subscribe?token=b62ccc25345017b6a00a565223821f2f&flag=meta"
         private val DEFAULT_UPDATE_INTERVAL = TimeUnit.HOURS.toMillis(6)

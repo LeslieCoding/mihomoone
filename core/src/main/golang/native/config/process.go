@@ -25,7 +25,7 @@ var processors = []processor{
 	patchTun,
 	patchListeners,
 	patchProviders,
-	patchProxyOneAutoSelect, // after patchProviders, before validConfig
+	patchMihomoOneAutoSelect, // after patchProviders, before validConfig
 	validConfig,
 }
 
@@ -55,6 +55,12 @@ func patchGeneral(cfg *config.RawConfig, profileDir string) error {
 	if cfg.ExternalController != "" || cfg.ExternalControllerTLS != "" {
 		cfg.ExternalUI = profileDir + "/ui"
 	}
+
+	// Performance/stability: unified-delay measures the full handshake+request
+	// latency (more truthful node ranking); tcp-concurrent dials all candidates
+	// of a group at once, cutting connect latency after a node switch.
+	cfg.UnifiedDelay = true
+	cfg.TCPConcurrent = true
 
 	return nil
 }
@@ -123,38 +129,68 @@ func patchProviders(cfg *config.RawConfig, profileDir string) error {
 	return nil
 }
 
-var proxyOneRegionPattern = regexp2.MustCompile(`(?i)(新加坡|日本|🇸🇬|🇯🇵|SG|JP)`, 0)
+// Info entries published by the subscription (traffic counters etc.) are not
+// real nodes; never let them into the auto group.
+var mihomoOneInfoPattern = regexp2.MustCompile(`(?i)(剩余流量|套餐到期|下次重置|距离|官网|expire|traffic)`, 0)
 
-// Only use Singapore/Japan nodes: collect them into a url-test group named
-// "ProxyOne" and put that group first in every select group, so the kernel
-// always lands on the fastest SG/JP node (StoreSelected is disabled, the
-// first entry is the effective default on every load).
-func patchProxyOneAutoSelect(cfg *config.RawConfig, _ string) error {
-	var regionProxies []any
+// Auto-select rule aligned with desktop ProxyOne v3.2.4 (2026-10-21):
+// region is NO LONGER restricted to SG/JP — any region qualifies, but only
+// Hysteria/Hysteria2 protocol nodes (AnyTLS etc. measured slow, excluded).
+// The url-test group "MihomoOne" pins the lowest-latency one and is placed
+// first in every select group (StoreSelected is disabled, so the first entry
+// is the effective default on every load). lazy=false keeps delays probed
+// proactively so a dead node is detected within one interval, not on use.
+func patchMihomoOneAutoSelect(cfg *config.RawConfig, _ string) error {
+	isHysteria := func(t string) bool {
+		switch strings.ToLower(t) {
+		case "hysteria", "hysteria2":
+			return true
+		}
+		return false
+	}
+
+	var hysteriaProxies []any
 	for _, p := range cfg.Proxy {
 		name, _ := p["name"].(string)
 		if name == "" {
 			continue
 		}
-		if matched, _ := proxyOneRegionPattern.MatchString(name); matched {
-			regionProxies = append(regionProxies, name)
+		proxyType, _ := p["type"].(string)
+		if isHysteria(proxyType) {
+			hysteriaProxies = append(hysteriaProxies, name)
 		}
 	}
 
 	autoGroup := map[string]any{
-		"name":      "ProxyOne",
+		"name":      "MihomoOne",
 		"type":      "url-test",
 		"url":       "http://www.gstatic.com/generate_204",
 		"interval":  60,
 		"tolerance": 100,
+		"lazy":      false,
 	}
 
-	if len(regionProxies) > 0 {
-		autoGroup["proxies"] = regionProxies
+	if len(hysteriaProxies) > 0 {
+		autoGroup["proxies"] = hysteriaProxies
+	} else if len(cfg.Proxy) > 0 {
+		// Fail-safe: subscription has inline proxies but none speak Hysteria.
+		// Include all non-info nodes rather than emitting a broken empty group.
+		for _, p := range cfg.Proxy {
+			name, _ := p["name"].(string)
+			if name == "" {
+				continue
+			}
+			if matched, _ := mihomoOneInfoPattern.MatchString(name); matched {
+				continue
+			}
+			hysteriaProxies = append(hysteriaProxies, name)
+		}
+		autoGroup["proxies"] = hysteriaProxies
 	} else {
-		// No inline SG/JP proxies: nodes may live in proxy-providers,
-		// which resolve at runtime. Reference all providers and let the
-		// kernel filter their nodes by name.
+		// No inline proxies: nodes may live in proxy-providers, which resolve
+		// at runtime. Reference all providers; protocol can only be filtered
+		// by name here (subscription convention: -A<digit> suffix = AnyTLS,
+		// plain numeric suffix = Hysteria2), info entries excluded as well.
 		var providerNames []any
 		for name := range cfg.ProxyProvider {
 			providerNames = append(providerNames, name)
@@ -165,13 +201,19 @@ func patchProxyOneAutoSelect(cfg *config.RawConfig, _ string) error {
 		}
 
 		autoGroup["use"] = providerNames
-		autoGroup["filter"] = `(?i)(新加坡|日本|🇸🇬|🇯🇵|SG|JP)`
+		autoGroup["exclude-filter"] = `(?i)(-A\d+$|剩余流量|套餐到期|重置|expire|traffic)`
+	}
+
+	if _, useProviders := autoGroup["use"]; !useProviders {
+		if proxies, _ := autoGroup["proxies"].([]any); len(proxies) == 0 {
+			return nil
+		}
 	}
 
 	hasAutoGroup := false
 	for _, g := range cfg.ProxyGroup {
 		name, _ := g["name"].(string)
-		if name == "ProxyOne" {
+		if name == "MihomoOne" {
 			hasAutoGroup = true
 			break
 		}
@@ -183,20 +225,20 @@ func patchProxyOneAutoSelect(cfg *config.RawConfig, _ string) error {
 	for _, g := range cfg.ProxyGroup {
 		groupType, _ := g["type"].(string)
 		name, _ := g["name"].(string)
-		if groupType != "select" || name == "ProxyOne" {
+		if groupType != "select" || name == "MihomoOne" {
 			continue
 		}
 
 		proxies, _ := g["proxies"].([]any)
 		contains := false
 		for _, p := range proxies {
-			if s, _ := p.(string); s == "ProxyOne" {
+			if s, _ := p.(string); s == "MihomoOne" {
 				contains = true
 				break
 			}
 		}
 		if !contains {
-			g["proxies"] = append([]any{"ProxyOne"}, proxies...)
+			g["proxies"] = append([]any{"MihomoOne"}, proxies...)
 		}
 	}
 

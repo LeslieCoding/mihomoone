@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,7 +18,9 @@ import (
 	"cfa/native/app"
 
 	"github.com/metacubex/mihomo/adapter/provider"
+	"github.com/metacubex/mihomo/common/yaml"
 	clashHttp "github.com/metacubex/mihomo/component/http"
+	"github.com/metacubex/mihomo/log"
 	RB "github.com/metacubex/mihomo/rules/bundle"
 )
 
@@ -121,14 +124,34 @@ func openUrl(ctx context.Context, url string) (io.ReadCloser, fetchHeader, error
 	return reader, fh, err
 }
 
+// validateConfigFile rejects broken subscription payloads (empty body, HTML
+// error pages, v2board zero-proxy templates) so a bad download never
+// overwrites the last known good config.
+func validateConfigFile(file string) error {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+
+	var probe struct {
+		Proxy         []map[string]any `yaml:"proxies"`
+		ProxyProvider map[string]any   `yaml:"proxy-providers"`
+	}
+	if err := yaml.Unmarshal(data, &probe); err != nil {
+		return fmt.Errorf("parse downloaded config: %s", err.Error())
+	}
+	if len(probe.Proxy) == 0 && len(probe.ProxyProvider) == 0 {
+		return errors.New("downloaded config contains no proxies")
+	}
+
+	return nil
+}
+
 func openContent(url string) (io.ReadCloser, error) {
 	return app.OpenContent(url)
 }
 
-func fetch(url *U.URL, file string) (fetchHeader, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
+func fetchOnce(ctx context.Context, url *U.URL, file string, validate func(string) error) (fetchHeader, error) {
 	var reader io.ReadCloser
 	var header fetchHeader
 	var err error
@@ -148,7 +171,48 @@ func fetch(url *U.URL, file string) (fetchHeader, error) {
 
 	defer reader.Close()
 
-	return header, writeFile(file, reader)
+	// Write to a temp file first, validate, then atomically move into place:
+	// a failed or invalid download must not destroy the existing file.
+	tmp := file + ".partial"
+	if err := writeFile(tmp, reader); err != nil {
+		_ = os.Remove(tmp)
+		return fetchHeader{}, err
+	}
+
+	if validate != nil {
+		if err := validate(tmp); err != nil {
+			_ = os.Remove(tmp)
+			return fetchHeader{}, err
+		}
+	}
+
+	if err := os.Rename(tmp, file); err != nil {
+		_ = os.Remove(tmp)
+		return fetchHeader{}, err
+	}
+
+	return header, nil
+}
+
+func fetch(url *U.URL, file string, validate func(string) error) (fetchHeader, error) {
+	var header fetchHeader
+	var lastErr error
+
+	for attempt := 0; attempt < 3; attempt++ {
+		if attempt > 0 {
+			time.Sleep(time.Duration(3*attempt) * time.Second)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+		header, lastErr = fetchOnce(ctx, url, file, validate)
+		cancel()
+
+		if lastErr == nil {
+			return header, nil
+		}
+	}
+
+	return fetchHeader{}, lastErr
 }
 
 func writeFile(file string, reader io.Reader) error {
@@ -241,7 +305,7 @@ func FetchAndValid(
 
 		reportStatus(string(bytes))
 
-		header, err := fetch(url, configPath)
+		header, err := fetch(url, configPath, validateConfigFile)
 		if err != nil {
 			return err
 		}
@@ -305,7 +369,10 @@ func FetchAndValid(
 			}
 		}
 
-		_, _ = fetch(url, ps)
+		_, err = fetch(url, ps, nil)
+		if err != nil {
+			log.Warnln("Fetch provider %s: %s", us, err.Error())
+		}
 	})
 
 	bytes, _ := json.Marshal(&Status{

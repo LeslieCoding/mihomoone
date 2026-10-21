@@ -4,7 +4,7 @@
     android:viewportWidth="108"
     android:viewportHeight="108"
     android:tint="@color/color_clash">
-    <!-- ProxyOne bolt mark for status bar / notification -->
+    <!-- MihomoOne bolt mark for status bar / notification -->
     <path
         android:fillColor="#FFFFFFFF"
         android:pathData="M58,26 L38,58 h12 L46,82 L72,46 h-14 L66,26 Z" />

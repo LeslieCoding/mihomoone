@@ -64,7 +64,7 @@
     <string name="settings">设置</string>
     <string name="show_traffic">显示流量</string>
     <string name="show_traffic_summary">在通知中自动刷新流量</string>
-    <string name="allow_clash_auto_restart">允许 ProxyOne 自动重启</string>
+    <string name="allow_clash_auto_restart">允许 MihomoOne 自动重启</string>
     <string name="auto_restart">自动重启</string>
     <string name="stopped">已停止</string>
     <string name="tap_to_start">点此启动</string>
@@ -81,7 +81,7 @@
     <string name="age_key_generate">生成</string>
     <string name="age_key_to_public">从私钥生成</string>
     <string name="age_key_copy">复制</string>
-    <string name="clash_meta_for_android">ProxyOne</string>
+    <string name="clash_meta_for_android">MihomoOne</string>
     <string name="tips_properties"><![CDATA[仅接受 <strong>Clash 配置文件</strong>(包含<strong>代理</strong>/<strong>规则</strong>)]]></string>
     <string name="loading">载入中</string>
     <string name="allow_all_apps">允许所有应用</string>
@@ -223,15 +223,15 @@
     <string name="toast_profile_updated_complete">更新配置 %s 成功</string>
     <string name="toast_profile_updated_failed">更新配置 %1$s 失败：%2$s</string>
     <string name="external_control_activity">外部控制</string>
-    <string name="external_control_started">ProxyOne 服务已启动</string>
-    <string name="external_control_stopped">ProxyOne 服务已停止</string>
+    <string name="external_control_started">MihomoOne 服务已启动</string>
+    <string name="external_control_stopped">MihomoOne 服务已停止</string>
     <string name="import_from_qr_no_permission">相机权限受限，请前往设置开启。</string>
     <string name="import_from_qr_exception">发生系统未知异常，操作失败。</string>
 
-    <string name="shortcut_toggle_short">切换 ProxyOne</string>
-    <string name="shortcut_toggle_long">切换 ProxyOne 服务启停</string>
-    <string name="shortcut_start_short">启动 ProxyOne</string>
-    <string name="shortcut_start_long">启动 ProxyOne 服务</string>
-    <string name="shortcut_stop_short">停止 ProxyOne</string>
-    <string name="shortcut_stop_long">停止 ProxyOne 服务</string>
+    <string name="shortcut_toggle_short">切换 MihomoOne</string>
+    <string name="shortcut_toggle_long">切换 MihomoOne 服务启停</string>
+    <string name="shortcut_start_short">启动 MihomoOne</string>
+    <string name="shortcut_start_long">启动 MihomoOne 服务</string>
+    <string name="shortcut_stop_short">停止 MihomoOne</string>
+    <string name="shortcut_stop_long">停止 MihomoOne 服务</string>
 </resources>

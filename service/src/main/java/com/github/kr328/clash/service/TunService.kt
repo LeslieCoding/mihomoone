@@ -175,7 +175,7 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
             setMtu(TUN_MTU)
 
             // Session Name
-            setSession("ProxyOne")
+            setSession("MihomoOne")
 
             // Virtual Dns Server
             addDnsServer(TUN_DNS)

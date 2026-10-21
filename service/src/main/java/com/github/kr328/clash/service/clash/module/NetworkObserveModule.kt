@@ -17,6 +17,10 @@ import java.util.concurrent.ConcurrentHashMap
 class NetworkObserveModule(service: Service) : Module<Network>(service) {
     private val connectivity = service.getSystemService<ConnectivityManager>()!!
     private val networks: Channel<Network> = Channel(Channel.UNLIMITED)
+
+    companion object {
+        private const val HEALTH_CHECK_DEBOUNCE_MS = 20_000L
+    }
     private val request = NetworkRequest.Builder().apply {
         addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
         addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -38,10 +42,17 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
     @Volatile
     private var curDnsList = emptyList<String>()
 
+    @Volatile
+    private var curNetwork: Network? = null
+
+    @Volatile
+    private var lastHealthCheckMs = 0L
+
     private val callback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             Log.i("NetworkObserve onAvailable network=$network")
             networkInfos[network] = NetworkInfo()
+            notifyNetworkSwitch()
         }
 
         override fun onLosing(network: Network, maxMsToLive: Int) {
@@ -56,6 +67,7 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
             Log.i("NetworkObserve onLost network=$network")
             networkInfos.remove(network)
             notifyDnsChange()
+            notifyNetworkSwitch()
 
             networks.trySend(network)
         }
@@ -125,6 +137,31 @@ class NetworkObserveModule(service: Service) : Module<Network>(service) {
             curDnsList = dnsList
             Clash.notifyDnsChanged(dnsList)
         }
+    }
+
+    // The url-test delay table is per-network-path; after a preferred-network
+    // switch (WiFi <-> cellular) the old delays are meaningless and the group
+    // may sit on a dead node until the next interval tick. Force a full
+    // health check on switch (debounced, first observation only arms it).
+    private fun notifyNetworkSwitch() {
+        val best = networkInfos.entries.minByOrNull { networkToInt(it) }?.key ?: return
+        val prev = curNetwork
+        if (best == prev) {
+            return
+        }
+        curNetwork = best
+        if (prev == null) {
+            return
+        }
+
+        val now = System.currentTimeMillis()
+        if (now - lastHealthCheckMs < HEALTH_CHECK_DEBOUNCE_MS) {
+            return
+        }
+        lastHealthCheckMs = now
+
+        Log.i("NetworkObserve preferred network switched $prev -> $best, health check all")
+        Clash.healthCheckAll()
     }
 
     override suspend fun run() {
