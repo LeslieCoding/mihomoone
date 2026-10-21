@@ -18,7 +18,7 @@ else
   export ANDROID_NDK_HOME="$ANDROID_HOME\\ndk\\29.0.14206865" GOROOT="D:\\Software\\go1.26"
   export PATH="/d/Software/go1.26/bin:/d/Software/jdk-21/bin:$PATH"
   GRADLE="$HOME/.gradle/wrapper/dists/gradle-8.11.1-all/6gcpoccneql1b0krsle0llw37/gradle-8.11.1/bin/gradle"
-  "$GRADLE" :app:assembleAlphaRelease -Pandroid.injected.build.abi=arm64-v8a --rerun-tasks \
+  "$GRADLE" :app:assembleAlphaRelease -Pandroid.injected.build.abi=arm64-v8a -Pandroid.injected.testOnly=false --rerun-tasks \
     -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=7897 \
     -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=7897
 fi
