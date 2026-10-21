@@ -156,6 +156,8 @@ func PatchSelector(selector, name string) bool {
 
 	if err := s.Set(name); err != nil {
 		log.Warnln("Patch selector `%s`: %s", selector, err.Error())
+
+		return false
 	}
 
 	log.Infoln("Patch selector %s -> %s", selector, name)
@@ -172,6 +174,12 @@ func convertProxies(proxies []C.Proxy, uiSubtitlePattern *regexp2.Regexp) []*Pro
 		name := p.Name()
 		title := name
 		subtitle := p.Type().String()
+
+		// The auto url-test group appears inside select groups as the
+		// "back to automatic" entry; show a friendly name for it.
+		if name == "MihomoOne" {
+			title = "自动选择"
+		}
 
 		if uiSubtitlePattern != nil {
 			if _, ok := p.Adapter().(outboundgroup.ProxyGroup); !ok {

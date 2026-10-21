@@ -37,7 +37,7 @@ class ProxyViewState(
         var invalidate = false
 
         if (proxy.isGroup) {
-            title = proxy.name
+            title = proxy.title.ifEmpty { proxy.name }
 
             if (link == null) {
                 subtitle = proxy.type

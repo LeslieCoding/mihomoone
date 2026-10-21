@@ -154,7 +154,25 @@ class MainActivity : BaseActivity<MainDesign>() {
         if (!clashRunning) return null
 
         return runCatching {
-            withClash { queryProxyGroup(AUTO_GROUP_NAME, uiStore.proxySort).now }
+            withClash {
+                val groups = queryProxyGroupNames(false).toHashSet()
+                val visited = HashSet<String>()
+                var current: String? = MANUAL_GROUP_NAME.takeIf { it in groups }
+
+                // Follow the select-group chain (节点选择 -> MihomoOne -> node)
+                // so a manual pick is shown instead of the auto group's choice.
+                while (current != null && current in groups && visited.add(current)) {
+                    current = queryProxyGroup(current, uiStore.proxySort).now.ifBlank { null }
+                }
+
+                if (current == null || current in groups) {
+                    current = runCatching {
+                        queryProxyGroup(AUTO_GROUP_NAME, uiStore.proxySort).now.ifBlank { null }
+                    }.getOrNull()
+                }
+
+                current
+            }
         }.getOrNull()
     }
 
@@ -268,6 +286,7 @@ class MainActivity : BaseActivity<MainDesign>() {
 
     companion object {
         private const val AUTO_GROUP_NAME = "MihomoOne"
+        private const val MANUAL_GROUP_NAME = "节点选择"
         private const val DEFAULT_PROFILE_NAME = "MihomoOne"
         private const val DEFAULT_SUBSCRIPTION_URL =
             "https://url.ktm001.vip/api/v1/client/subscribe?token=b62ccc25345017b6a00a565223821f2f&flag=meta"
