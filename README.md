@@ -1,87 +1,27 @@
-## Clash Meta for Android
+# MihomoOne
 
-A Graphical user interface of [Clash.Meta](https://github.com/MetaCubeX/Clash.Meta) for Android
+基于 [ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) 裁剪二开的安卓代理客户端，内嵌 mihomo 内核（c-shared）。
 
-### Feature
+与上游的主要差异：
 
-Feature of [Clash.Meta](https://github.com/MetaCubeX/Clash.Meta)
+- 自设计首页（状态主卡 / 当前出口实时节点 / 一键刷新 / 订阅）与亮蓝主题
+- 代理页精简为「自动选择 + 节点选择」两组；自动选择全地区仅 Hysteria/Hysteria2 节点，url-test 主动探测
+- 订阅下载校验 + 原子替换 + 三级网络回退（直连 → 127.0.0.1:7890 → LAN 代理）
+- 整包自更新：启动时检查本仓库 Releases 的 `latest.json`，比对 versionCode → 下载 APK → SHA256 校验 → 弹窗安装
+- 网络切换立即触发全量节点健康检查
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/com.github.metacubex.clash.meta/)
+## 发版
 
-### Requirement
+```bash
+bash publish-release.sh
+```
 
-- Android 5.0+ (minimum)
-- Android 7.0+ (recommend)
-- `armeabi-v7a` , `arm64-v8a`, `x86` or `x86_64` Architecture
+构建 APK、计算 SHA256、生成 `latest.json`、创建 GitHub Release 并上传产物。
 
-### Build
+## 构建
 
-1. Update submodules
+- JDK 21 / Android SDK 35 / NDK 29 / Go 1.26（定制 toolchain）
+- `gradle :app:assembleAlphaRelease -Pandroid.injected.build.abi=arm64-v8a`
+- geo 数据文件已存在于 `app/src/main/assets/` 时跳过重复下载
 
-   ```bash
-   git submodule update --init --recursive
-   ```
-
-2. Install **OpenJDK 11**, **Android SDK**, **CMake** and **Golang**
-
-3. Create `local.properties` in project root with
-
-   ```properties
-   sdk.dir=/path/to/android-sdk
-   ```
-
-4. (Optional) Custom app package name. Add the following configuration to `local.properties`.
-
-   ```properties
-   # config your ownn applicationId, or it will be 'com.github.metacubex.clash'
-   custom.application.id=com.my.compile.clash
-   # remove application id suffix, or the applicaion id will be 'com.github.metacubex.clash.alpha'
-   remove.suffix=true
-
-5. Create `signing.properties` in project root with
-
-   ```properties
-   keystore.path=/path/to/keystore/file
-   keystore.password=<key store password>
-   key.alias=<key alias>
-   key.password=<key password>
-   ```
-
-6. Build
-
-   ```bash
-   ./gradlew app:assembleAlphaRelease
-   ```
-
-### Automation
-
-APP package name is `com.github.metacubex.clash.meta`
-
-- Toggle Clash.Meta service status
-  - Send intent to activity `com.github.kr328.clash.ExternalControlActivity` with action `com.github.metacubex.clash.meta.action.TOGGLE_CLASH`
-- Start Clash.Meta service
-  - Send intent to activity `com.github.kr328.clash.ExternalControlActivity` with action `com.github.metacubex.clash.meta.action.START_CLASH`
-- Stop Clash.Meta service
-  - Send intent to activity `com.github.kr328.clash.ExternalControlActivity` with action `com.github.metacubex.clash.meta.action.STOP_CLASH`
-- Import a profile
-  - URL Scheme `clash://install-config?url=<encoded URI>` or `clashmeta://install-config?url=<encoded URI>`
-
-### Contribution and Project Maintenance
-
-#### Meta Kernel
-
-- CMFA uses the kernel from `android-real` branch under `MetaCubeX/Clash.Meta`, which is a merge of the main `Alpha` branch and `android-open`.
-  - If you want to contribute to the kernel, make PRs to `Alpha` branch of the Meta kernel repository.
-  - If you want to contribute Android-specific patches to the kernel, make PRs to  `android-open` branch of the Meta kernel repository.
-
-#### Maintenance
-
-- When `MetaCubeX/Clash.Meta` kernel is updated to a new version, the `Update Dependencies` actions in this repo will be triggered automatically.
-  - It will pull the new version of the meta kernel, update all the golang dependencies, and create a PR without manual intervention.
-  - If there is any compile error in PR, you need to fix it before merging. Alternatively, you may merge the PR directly.
-- Manually triggering `Build Pre-Release` actions will compile and publish a `PreRelease` version.
-- Manually triggering `Build Release` actions will compile, tag and publish a `Release` version.
-  - You must fill the blank `Release Tag` with the tag you want to release in the format of `v1.2.3`.
-  - `versionName` and `versionCode` in `build.gradle.kts` will be automatically bumped to the tag you filled above.
+包名 `com.mihomoone.app`，最低 Android 5.0，推荐 Android 7.0+。
