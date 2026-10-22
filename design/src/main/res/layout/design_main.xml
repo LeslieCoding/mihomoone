@@ -55,61 +55,78 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
                     android:minHeight="@dimen/main_top_banner_height"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
-                    <FrameLayout
-                        android:layout_width="@dimen/large_item_header_layout_size"
-                        android:layout_height="@dimen/large_item_header_layout_size">
-
-                        <View
-                            android:layout_width="@dimen/main_logo_size"
-                            android:layout_height="@dimen/main_logo_size"
-                            android:layout_gravity="center"
-                            android:background="@drawable/ic_mihomoone" />
-                    </FrameLayout>
-
-                    <TextView
-                        android:layout_width="0dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/application_name"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <FrameLayout
+                            android:layout_width="@dimen/large_item_header_layout_size"
+                            android:layout_height="@dimen/large_item_header_layout_size">
+
+                            <View
+                                android:layout_width="@dimen/main_logo_size"
+                                android:layout_height="@dimen/main_logo_size"
+                                android:layout_gravity="center"
+                                android:background="@drawable/ic_mihomoone" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/application_name"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:text="@{mode}"
+                            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="@{mode}"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
+                        android:gravity="end"
+                        android:orientation="horizontal">
 
-                    <ImageButton
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/logs"
-                        android:onClick="@{() -> self.request(Request.OpenLogs)}"
-                        android:src="@drawable/ic_baseline_assignment"
-                        app:tint="?attr/colorControlNormal" />
+                        <ImageButton
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/logs"
+                            android:onClick="@{() -> self.request(Request.OpenLogs)}"
+                            android:src="@drawable/ic_baseline_assignment"
+                            app:tint="?attr/colorControlNormal" />
 
-                    <ImageButton
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/settings"
-                        android:onClick="@{() -> self.request(Request.OpenSettings)}"
-                        android:src="@drawable/ic_baseline_settings"
-                        app:tint="?attr/colorControlNormal" />
+                        <ImageButton
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="4dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/settings"
+                            android:onClick="@{() -> self.request(Request.OpenSettings)}"
+                            android:src="@drawable/ic_baseline_settings"
+                            app:tint="?attr/colorControlNormal" />
 
-                    <ImageButton
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/about"
-                        android:onClick="@{() -> self.request(Request.OpenAbout)}"
-                        android:src="@drawable/ic_baseline_info"
-                        app:tint="?attr/colorControlNormal" />
+                        <ImageButton
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/about"
+                            android:onClick="@{() -> self.request(Request.OpenAbout)}"
+                            android:src="@drawable/ic_baseline_info"
+                            app:tint="?attr/colorControlNormal" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <com.github.kr328.clash.design.view.LargeActionCard
