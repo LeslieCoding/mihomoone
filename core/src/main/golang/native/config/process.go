@@ -133,8 +133,21 @@ func patchProviders(cfg *config.RawConfig, profileDir string) error {
 // real nodes; never let them into the auto group.
 var mihomoOneInfoPattern = regexp2.MustCompile(`(?i)(剩余流量|套餐到期|下次重置|距离|官网|expire|traffic)`, 0)
 
-// Auto-select rule aligned with desktop ProxyOne v3.2.4 (2026-10-21):
-// region is NO LONGER restricted to SG/JP — any region qualifies, but only
+// Mainland-accessible regions are unusable for OpenAI/GPT etc. (HK is blocked
+// by OpenAI), so auto-select must never land on them. TW is NOT excluded:
+// OpenAI serves Taiwan normally. Matches both Chinese names and HK/MO codes.
+var mihomoOneRegionBlockPattern = regexp2.MustCompile(`(?i)(香港|澳门|Hong\s?Kong|Macau|(?<![A-Za-z])HK(?![A-Za-z])|(?<![A-Za-z])MO(?![A-Za-z]))`, 0)
+
+// Provider-path filter. Protocol by subscription naming convention:
+// -A<digit> suffix = AnyTLS, -0<digit> suffix = VMess (both measured slow,
+// excluded — the auto group is Hysteria/Hysteria2-only like the desktop).
+// Plain -<digit> suffix = Hysteria2. Info entries, marketing nodes (官网) and
+// blocked regions (HK/MO) are excluded as well.
+const mihomoOneProviderExcludeFilter = `(?i)(-A\d+$|-0\d+$|剩余流量|套餐到期|重置|官网|expire|traffic|香港|澳门|Hong\s?Kong|Macau|(?<![A-Za-z])HK(?![A-Za-z])|(?<![A-Za-z])MO(?![A-Za-z]))`
+
+// Auto-select rule aligned with desktop ProxyOne v3.2.4 (2026-10-21), plus a
+// region blocklist (2026-10-22): region is NO LONGER restricted to SG/JP — any
+// region qualifies EXCEPT HK/MO (OpenAI unreachable there), and only
 // Hysteria/Hysteria2 protocol nodes (AnyTLS etc. measured slow, excluded).
 // The url-test group "MihomoOne" pins the lowest-latency one and is placed
 // first in every select group (StoreSelected is disabled, so the first entry
@@ -153,6 +166,9 @@ func patchMihomoOneAutoSelect(cfg *config.RawConfig, _ string) error {
 	for _, p := range cfg.Proxy {
 		name, _ := p["name"].(string)
 		if name == "" {
+			continue
+		}
+		if blocked, _ := mihomoOneRegionBlockPattern.MatchString(name); blocked {
 			continue
 		}
 		proxyType, _ := p["type"].(string)
@@ -174,13 +190,17 @@ func patchMihomoOneAutoSelect(cfg *config.RawConfig, _ string) error {
 		autoGroup["proxies"] = hysteriaProxies
 	} else if len(cfg.Proxy) > 0 {
 		// Fail-safe: subscription has inline proxies but none speak Hysteria.
-		// Include all non-info nodes rather than emitting a broken empty group.
+		// Include all non-info, non-blocked-region nodes rather than emitting
+		// a broken empty group.
 		for _, p := range cfg.Proxy {
 			name, _ := p["name"].(string)
 			if name == "" {
 				continue
 			}
 			if matched, _ := mihomoOneInfoPattern.MatchString(name); matched {
+				continue
+			}
+			if blocked, _ := mihomoOneRegionBlockPattern.MatchString(name); blocked {
 				continue
 			}
 			hysteriaProxies = append(hysteriaProxies, name)
@@ -190,7 +210,8 @@ func patchMihomoOneAutoSelect(cfg *config.RawConfig, _ string) error {
 		// No inline proxies: nodes may live in proxy-providers, which resolve
 		// at runtime. Reference all providers; protocol can only be filtered
 		// by name here (subscription convention: -A<digit> suffix = AnyTLS,
-		// plain numeric suffix = Hysteria2), info entries excluded as well.
+		// -0<digit> suffix = VMess, plain numeric suffix = Hysteria2), info
+		// entries and blocked regions (HK/MO) excluded as well.
 		var providerNames []any
 		for name := range cfg.ProxyProvider {
 			providerNames = append(providerNames, name)
@@ -201,7 +222,7 @@ func patchMihomoOneAutoSelect(cfg *config.RawConfig, _ string) error {
 		}
 
 		autoGroup["use"] = providerNames
-		autoGroup["exclude-filter"] = `(?i)(-A\d+$|剩余流量|套餐到期|重置|expire|traffic)`
+		autoGroup["exclude-filter"] = mihomoOneProviderExcludeFilter
 	}
 
 	if _, useProviders := autoGroup["use"]; !useProviders {
